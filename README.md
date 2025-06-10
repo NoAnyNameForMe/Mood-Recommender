@@ -1,5 +1,8 @@
 # 🎬 Mood Recommender - پیشنهادگر هوشمند فیلم، سریال و موسیقی
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://noanynameforme.github.io/Mood-Recommender/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?style=for-the-badge)](https://github.com/NoAnyNameForMe/Mood-Recommender)
+
 این پروژه یک وب اپلیکیشن هوشمند است که بر اساس حس و حال (Mood) کاربر، به او فیلم، سریال و موسیقی مناسب پیشنهاد می‌دهد. این اپلیکیشن با استفاده از هوش مصنوعی (Google Gemini) متن ورودی کاربر را تحلیل کرده و پیشنهادهای شخصی‌سازی شده‌ای ارائه می‌کند.
 
 ![پیش‌نمایش اپلیکیشن](https://github.com/user-attachments/assets/99f53f1f-6e3e-4ef1-874c-9740700f7bfa)
@@ -65,13 +68,12 @@ Cloudflare Workers، GitHub Pages
 **۱. کلون کردن ریپازیتوری:**
 برای شروع، پروژه را روی سیستم خود کلون کنید.
 ```bash
-git clone [https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git)
-cd YOUR_REPOSITORY
+git clone [https://github.com/NoAnyNameForMe/Mood-Recommender.git](https://github.com/NoAnyNameForMe/Mood-Recommender.git)
+cd Mood-Recommender
 ```
-> توجه: `YOUR_USERNAME` و `YOUR_REPOSITORY` را با نام کاربری و نام ریپازیتوری خود در گیت‌هاب جایگزین کنید.
 
 **۲. ساخت Cloudflare Worker:**
-به داشبورد کلودفلر خود بروید و در بخش **Workers & Pages** یک Worker جدید بسازید. سپس کد موجود در فایل `worker.js` پروژه را در ویرایشگر ورکر کپی کنید.
+به داشبورد کلودفلر خود بروید و در بخش **Workers & Pages** یک Worker جدید بسازید. سپس محتوای فایل `worker.js` موجود در این ریپازیتوری را در ویرایشگر ورکر کپی کنید.
 
 **۳. تنظیم متغیرهای محیطی (Secrets):**
 در تنظیمات ورکر خود، به بخش **Variables** بروید و متغیرهای زیر را از نوع **Secret** تعریف کرده و کلیدهای API خود را وارد کنید:
