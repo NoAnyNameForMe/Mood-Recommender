@@ -7,9 +7,14 @@
 
 ![پیش‌نمایش اپلیکیشن](https://github.com/user-attachments/assets/99f53f1f-6e3e-4ef1-874c-9740700f7bfa)
 
+
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://noanynameforme.github.io/Mood-Recommender/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-blue?style=for-the-badge)](https://github.com/NoAnyNameForMe/Mood-Recommender)
 ---
 
 ## ✨ قابلیت‌های کلیدی
+
+**دموی برنامه **: [![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen?style=for-the-badge)](https://noanynameforme.github.io/Mood-Recommender/)
 
 **تحلیل هوشمند حس و حال**: با استفاده از قدرت مدل زبان بزرگ Google Gemini، احساسات کاربر از روی متن ورودی تحلیل می‌شود.
 
