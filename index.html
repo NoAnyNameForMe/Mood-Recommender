@@ -514,12 +514,28 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="w-full text-center py-6 mt-auto">
+        <a href="https://github.com/NoAnyNameForMe/Mood-Recommender" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center text-gray-400 hover:text-purple-400 transition-all duration-300 group text-sm">
+            <i class="fab fa-github fa-lg"></i>
+            <span class="mx-2 font-bold group-hover:underline">مشاهده پروژه در گیت‌هاب</span>
+        </a>
+        <!-- You can add other social links here -->
+        <!-- 
+        <a href="YOUR_LINKEDIN_URL" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center text-gray-400 hover:text-purple-400 transition-all duration-300 group text-sm ml-4">
+            <i class="fab fa-linkedin fa-lg"></i>
+        </a>
+        <a href="YOUR_TWITTER_URL" target="_blank" rel="noopener noreferrer" 
+           class="inline-flex items-center text-gray-400 hover:text-purple-400 transition-all duration-300 group text-sm ml-4">
+            <i class="fab fa-twitter fa-lg"></i>
+        </a> 
+        -->
+    </footer>
 
     <script type="module">
-        // IMPORTANT: Replace this with your actual Cloudflare Worker URL
-        const WORKER_URL = "https://moodfinder.callofdutysin.workers.dev"; 
-        
-        // API keys have been removed from here for security. They are now in the Cloudflare Worker.
+        const WORKER_URL = "https://moodfinder.callofdutysin.workers.dev";
         
         const ui = {
             moodForm: document.getElementById('mood-form'),
@@ -713,10 +729,8 @@
                 const startYear = ui.yearFromInput.value;
                 const endYear = ui.yearToInput.value;
                 
-                // New robust gathering function
                 const finalRecommendations = await gatherSufficientRecommendations(mood, startYear, endYear);
 
-                // Add the finally chosen items to the global history
                 recommendationHistory.movies.push(...(finalRecommendations.movies || []).map(m => m.title));
                 recommendationHistory.series.push(...(finalRecommendations.series || []).map(s => s.title));
                 recommendationHistory.songs.push(...(finalRecommendations.songs || []).map(s => s.title));
@@ -729,7 +743,6 @@
             }
         }
 
-        // --- NEW: Robustly gather recommendations ---
         async function gatherSufficientRecommendations(mood, startYear, endYear) {
             const TARGET_COUNT = 5;
             const MAX_TRIES = 3;
@@ -763,7 +776,7 @@
                         for (const item of source) {
                             if (!historySet.has(item.title) && target.length < TARGET_COUNT) {
                                 target.push(item);
-                                historySet.add(item.title); // Add to history immediately to avoid duplicates in the same session
+                                historySet.add(item.title);
                             }
                         }
                     }
@@ -779,13 +792,12 @@
 
         ui.moodForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            recommendationHistory = { movies: [], series: [], songs: [] }; // Reset for new mood
+            recommendationHistory = { movies: [], series: [], songs: [] };
             lastMood = ui.moodInput.value.trim();
             await handleSubmission(lastMood);
         });
         
         ui.refreshButton.addEventListener('click', async () => {
-             // Do NOT reset history for a refresh
              await handleSubmission(lastMood);
         });
 
@@ -795,7 +807,6 @@
         async function getRecommendationsFromAPI(prompt, lang, startYear, endYear, currentHistorySets) {
             const reasonLang = lang === 'fa' ? 'Persian' : 'English';
             
-            // Combine all seen titles into one list for the exclusion prompt
             const allHistory = [...currentHistorySets.movies, ...currentHistorySets.series, ...currentHistorySets.songs];
             let exclusionPrompt = '';
             if (allHistory.length > 0) {
@@ -836,7 +847,6 @@
                 }, required: ["movies", "series", "songs"]
             }}};
             
-            // MODIFIED: Point to the Cloudflare Worker
             const apiUrl = `${WORKER_URL}/v1beta/models/gemini-2.0-flash:generateContent?service=gemini`;
             
             const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
@@ -860,7 +870,6 @@
             let mediaData = { posterUrl: null, imdbId: null, trailerKey: null, imdbRating: null };
             const tmdbType = type === 'series' ? 'tv' : 'movie';
 
-            // MODIFIED: Point to the Cloudflare Worker for TMDB
             const tmdbSearchUrl = `${WORKER_URL}/3/search/${tmdbType}?service=tmdb&query=${encodeURIComponent(title)}&include_adult=false`;
             
             try {
@@ -874,7 +883,6 @@
 
                         mediaData.posterUrl = bestMatch.poster_path ? `https://image.tmdb.org/t/p/w500${bestMatch.poster_path}` : null;
                         
-                        // MODIFIED: Point to the Cloudflare Worker for TMDB details
                         const detailsUrl = `${WORKER_URL}/3/${tmdbType}/${bestMatch.id}?service=tmdb&append_to_response=videos,external_ids`;
                         const detailsRes = await fetch(detailsUrl);
                         if (detailsRes.ok) {
@@ -890,7 +898,6 @@
             if (!mediaData.posterUrl || !mediaData.imdbId || !mediaData.imdbRating) {
                 try {
                     const omdbType = (type === 'tv' || type === 'series') ? 'series' : 'movie';
-                    // MODIFIED: Point to the Cloudflare Worker for OMDB
                     const omdbUrl = `${WORKER_URL}/?service=omdb&t=${encodeURIComponent(title)}&y=${year}&type=${omdbType}`;
                     const omdbRes = await fetch(omdbUrl);
                     if (omdbRes.ok) {
@@ -908,7 +915,6 @@
         
          async function fetchSongCoverFromiTunes(artist, title) {
             const searchTerm = `${artist} ${title}`;
-            // MODIFIED: Point to the Cloudflare Worker for iTunes
             const url = `${WORKER_URL}/search?service=itunes&term=${encodeURIComponent(searchTerm)}&entity=song&limit=1`;
             try {
                 const res = await fetch(url);
@@ -1038,10 +1044,8 @@
             const scrollContainer = wrapper.querySelector('.horizontal-scroll-container');
             const prevButton = wrapper.querySelector('.scroll-button.prev');
             const nextButton = wrapper.querySelector('.scroll-button.next');
-            const scrollAmount = 300;
             
             let isScrolling = false;
-            let scrollTimeout;
             
             function updateButtonState() {
                 if(!scrollContainer) return;
@@ -1070,7 +1074,7 @@
                 if (isScrolling) return;
                 isScrolling = true;
                 
-                const cardWidth = 260 + 32; // card width + gap
+                const cardWidth = 260 + 32;
                 const scrollDistance = direction === 'next' ? cardWidth : -cardWidth;
                 
                 scrollContainer.scrollBy({ 
@@ -1085,73 +1089,6 @@
 
             prevButton.addEventListener('click', () => smoothScroll('prev'));
             nextButton.addEventListener('click', () => smoothScroll('next'));
-            
-            // Enhanced scroll with mouse wheel
-            scrollContainer.addEventListener('wheel', (e) => {
-                // Only handle horizontal scrolling if user is intentionally scrolling horizontally
-                // or if they're hovering over a card and using vertical scroll
-                const isHoveringCard = e.target.closest('.item-card');
-                const isIntentionalHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
-                
-                // If user is scrolling vertically and not hovering over a card, allow normal page scroll
-                if (!isHoveringCard && !isIntentionalHorizontal) {
-                    return;
-                }
-                
-                // If horizontal scroll is intended, handle it
-                if (isIntentionalHorizontal) {
-                    e.preventDefault();
-                    clearTimeout(scrollTimeout);
-                    scrollTimeout = setTimeout(() => {
-                        const direction = e.deltaX > 0 ? 'next' : 'prev';
-                        smoothScroll(direction);
-                    }, 50);
-                }
-                // If hovering over card and scrolling vertically, convert to horizontal scroll
-                else if (isHoveringCard) {
-                    e.preventDefault();
-                    clearTimeout(scrollTimeout);
-                    scrollTimeout = setTimeout(() => {
-                        const direction = e.deltaY > 0 ? 'next' : 'prev';
-                        smoothScroll(direction);
-                    }, 50);
-                }
-            }, { passive: false });
-            
-            // Auto-scroll on hover at edges
-            let autoScrollInterval;
-            scrollContainer.addEventListener('mousemove', (e) => {
-                const rect = scrollContainer.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const edgeThreshold = 50;
-                
-                clearInterval(autoScrollInterval);
-                
-                if (x < edgeThreshold && !prevButton.classList.contains('disabled')) {
-                    autoScrollInterval = setInterval(() => {
-                        scrollContainer.scrollBy({ left: -2, behavior: 'auto' });
-                    }, 16);
-                } else if (x > rect.width - edgeThreshold && !nextButton.classList.contains('disabled')) {
-                    autoScrollInterval = setInterval(() => {
-                        scrollContainer.scrollBy({ left: 2, behavior: 'auto' });
-                    }, 16);
-                }
-            });
-            
-            scrollContainer.addEventListener('mouseleave', () => {
-                clearInterval(autoScrollInterval);
-            });
-            
-            // Keyboard navigation
-            scrollContainer.addEventListener('keydown', (e) => {
-                if (e.key === 'ArrowLeft') {
-                    e.preventDefault();
-                    smoothScroll('prev');
-                } else if (e.key === 'ArrowRight') {
-                    e.preventDefault();
-                    smoothScroll('next');
-                }
-            });
             
             scrollContainer.addEventListener('scroll', updateButtonState);
             new ResizeObserver(updateButtonState).observe(scrollContainer);
