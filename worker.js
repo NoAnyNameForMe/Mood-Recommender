@@ -13,12 +13,14 @@
  * - GEMINI_API_KEY
  * - TMDB_API_KEY
  * - OMDB_API_KEY
+ * - IMGBB_API_KEY
  * 5. Deploy the worker.
  *
  * Your frontend will now call this worker's URL instead of the APIs directly.
  * Example Frontend Fetch:
  * fetch('/?service=tmdb&type=movie&query=Inception')
  * fetch('/?service=gemini', { method: 'POST', body: JSON.stringify(payload) })
+ * fetch('/1/upload?service=imgbb', { method: 'POST', body: formData })
  */
 
 // Define the allowed API services and their base URLs
@@ -27,6 +29,7 @@ const API_SERVICES = {
   tmdb: 'https://api.themoviedb.org',
   omdb: 'https://www.omdbapi.com',
   itunes: 'https://itunes.apple.com',
+  imgbb: 'https://api.imgbb.com',
 };
 
 export default {
@@ -61,6 +64,9 @@ export default {
         break;
       case 'omdb':
         targetUrl.searchParams.set('apikey', env.OMDB_API_KEY);
+        break;
+      case 'imgbb':
+        targetUrl.searchParams.set('key', env.IMGBB_API_KEY);
         break;
       // 'itunes' does not require a key, so we do nothing.
     }

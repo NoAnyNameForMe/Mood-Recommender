@@ -277,6 +277,10 @@
         html[lang="fa"] .scroll-button.prev { left: auto; right: 10px; }
         .scroll-button.next { right: 10px; }
         html[lang="fa"] .scroll-button.next { right: auto; left: 10px; }
+        
+        /* Fix chevron icons for RTL */
+        html[lang="fa"] .scroll-button.prev i::before { content: "\f054"; } /* chevron-right */
+        html[lang="fa"] .scroll-button.next i::before { content: "\f053"; } /* chevron-left */
         .scroll-button.disabled { 
             opacity: 0.2 !important; 
             cursor: not-allowed; 
@@ -866,9 +870,38 @@
             } else { throw new Error('Invalid response structure from API'); }
         }
         
+        async function uploadImageToImgBB(imageUrl, imageName) {
+            if (!imageUrl) return null;
+            
+            try {
+                // Create form data for ImgBB upload
+                const formData = new FormData();
+                formData.append('image', imageUrl);
+                formData.append('name', imageName);
+                
+                const uploadUrl = `${WORKER_URL}/1/upload?service=imgbb`;
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.url) {
+                        return result.data.url;
+                    }
+                }
+                return null;
+            } catch (e) {
+                console.error("Error uploading to ImgBB:", e);
+                return null;
+            }
+        }
+
         async function fetchMediaData(title, year, type = 'movie') {
             let mediaData = { posterUrl: null, imdbId: null, trailerKey: null, imdbRating: null };
             const tmdbType = type === 'series' ? 'tv' : 'movie';
+            let originalPosterUrl = null;
 
             const tmdbSearchUrl = `${WORKER_URL}/3/search/${tmdbType}?service=tmdb&query=${encodeURIComponent(title)}&include_adult=false`;
             
@@ -881,7 +914,7 @@
                         const yearMatch = searchData.results.find(r => (r.release_date || r.first_air_date || '').substring(0, 4) === year.toString().substring(0,4));
                         if(yearMatch) bestMatch = yearMatch;
 
-                        mediaData.posterUrl = bestMatch.poster_path ? `https://image.tmdb.org/t/p/w500${bestMatch.poster_path}` : null;
+                        originalPosterUrl = bestMatch.poster_path ? `https://image.tmdb.org/t/p/w500${bestMatch.poster_path}` : null;
                         
                         const detailsUrl = `${WORKER_URL}/3/${tmdbType}/${bestMatch.id}?service=tmdb&append_to_response=videos,external_ids`;
                         const detailsRes = await fetch(detailsUrl);
@@ -895,7 +928,7 @@
                 }
             } catch (e) { console.error("Error fetching from TMDB via worker:", e); }
 
-            if (!mediaData.posterUrl || !mediaData.imdbId || !mediaData.imdbRating) {
+            if (!originalPosterUrl || !mediaData.imdbId || !mediaData.imdbRating) {
                 try {
                     const omdbType = (type === 'tv' || type === 'series') ? 'series' : 'movie';
                     const omdbUrl = `${WORKER_URL}/?service=omdb&t=${encodeURIComponent(title)}&y=${year}&type=${omdbType}`;
@@ -903,13 +936,21 @@
                     if (omdbRes.ok) {
                         const omdbData = await omdbRes.json();
                         if (omdbData.Response === "True") {
-                            if (!mediaData.posterUrl && omdbData.Poster && omdbData.Poster !== 'N/A') mediaData.posterUrl = omdbData.Poster;
+                            if (!originalPosterUrl && omdbData.Poster && omdbData.Poster !== 'N/A') originalPosterUrl = omdbData.Poster;
                             if (!mediaData.imdbId && omdbData.imdbID) mediaData.imdbId = omdbData.imdbID;
                             if (omdbData.imdbRating && omdbData.imdbRating !== 'N/A') mediaData.imdbRating = omdbData.imdbRating;
                         }
                     }
                 } catch (e) { console.error("Error fetching from OMDB via worker:", e); }
             }
+            
+            // Upload the poster to ImgBB if we have one
+            if (originalPosterUrl) {
+                const imageName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_${year}_poster`;
+                const imgbbUrl = await uploadImageToImgBB(originalPosterUrl, imageName);
+                mediaData.posterUrl = imgbbUrl || originalPosterUrl; // Fallback to original if upload fails
+            }
+            
             return mediaData;
         }
         
@@ -921,7 +962,12 @@
                 if(!res.ok) return null;
                 const data = await res.json();
                 if (data.results && data.results.length > 0 && data.results[0].artworkUrl100) {
-                    return data.results[0].artworkUrl100.replace('100x100', '600x600');
+                    const originalCoverUrl = data.results[0].artworkUrl100.replace('100x100', '600x600');
+                    
+                    // Upload to ImgBB
+                    const imageName = `${artist.replace(/[^a-zA-Z0-9]/g, '_')}_${title.replace(/[^a-zA-Z0-9]/g, '_')}_cover`;
+                    const imgbbUrl = await uploadImageToImgBB(originalCoverUrl, imageName);
+                    return imgbbUrl || originalCoverUrl; // Fallback to original if upload fails
                 }
                 return null;
             } catch (e) {
@@ -1049,7 +1095,7 @@
             
             function updateButtonState() {
                 if(!scrollContainer) return;
-                const isRTL = document.documentElement.dir === 'rtl';
+                const isRTL = document.documentElement.lang === 'fa';
                 const scrollLeft = Math.abs(scrollContainer.scrollLeft); 
                 const isOverflowing = scrollContainer.scrollWidth > scrollContainer.clientWidth;
                 
@@ -1062,8 +1108,9 @@
                 nextButton.classList.remove('hidden');
 
                 if (isRTL) {
-                     nextButton.classList.toggle('disabled', scrollLeft <= 0);
+                     // In RTL, prev button should go right (forward) and next should go left (backward)
                      prevButton.classList.toggle('disabled', scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 5);
+                     nextButton.classList.toggle('disabled', scrollLeft <= 0);
                 } else {
                     prevButton.classList.toggle('disabled', scrollLeft <= 0);
                     nextButton.classList.toggle('disabled', scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 5);
@@ -1075,7 +1122,16 @@
                 isScrolling = true;
                 
                 const cardWidth = 260 + 32;
-                const scrollDistance = direction === 'next' ? cardWidth : -cardWidth;
+                const isRTL = document.documentElement.lang === 'fa';
+                let scrollDistance;
+                
+                if (isRTL) {
+                    // In RTL: prev goes left (negative), next goes right (positive)
+                    scrollDistance = direction === 'prev' ? -cardWidth : cardWidth;
+                } else {
+                    // In LTR: prev goes left (negative), next goes right (positive)
+                    scrollDistance = direction === 'next' ? cardWidth : -cardWidth;
+                }
                 
                 scrollContainer.scrollBy({ 
                     left: scrollDistance, 
