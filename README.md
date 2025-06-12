@@ -9,7 +9,9 @@
 
 **[English](#english) | [فارسی](#فارسی)**
 
-![App Preview](https://github.com/user-attachments/assets/99f53f1f-6e3e-4ef1-874c-9740700f7bfa)
+![App Preview](https://github.com/user-attachments/assets/87fb06b4-941a-4028-af6a-891c44e48851)
+![App Preview](https://github.com/user-attachments/assets/e90bc220-d527-4904-8f38-5cd22e48b586)
+
 
 </div>
 
@@ -119,6 +121,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 ## فارسی
+
+<div align="center">
+
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-brightgreen?style=for-the-badge&logo=vercel)](https://noanynameforme.github.io/Mood-Recommender/)
+[![GitHub Stars](https://img.shields.io/github/stars/NoAnyNameForMe/Mood-Recommender?style=for-the-badge&logo=github)](https://github.com/NoAnyNameForMe/Mood-Recommender/stargazers)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+[![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/NoAnyNameForMe)
+
+
+![App Preview](https://github.com/user-attachments/assets/99f53f1f-6e3e-4ef1-874c-9740700f7bfa)
+![App Preview](https://github.com/user-attachments/assets/6d71c689-3394-4bc1-a234-3ede528ed38a)
+</div>
+
+
 
 ### 🌟 معرفی
 
